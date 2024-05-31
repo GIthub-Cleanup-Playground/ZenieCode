@@ -63,5 +63,11 @@ const users = [
     { username: 'themanvendra00', permission: 'pull' },
     { username: 'Dheeraj-pal', permission: 'admin' }
 ];
+const branchesResponse = await octokit.repos.listBranches({
+            owner: templateOwner,
+            repo: templateRepo,
+        });
+
+        const branches = branchesResponse.data.map(branch => branch.name); 
 
 createRepoFromTemplate('ZY010', 'Hello World!', 'GIthub-Cleanup-Playground', 'GIthub-Cleanup-Playground', 'Hello-World', users);
