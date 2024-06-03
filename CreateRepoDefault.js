@@ -5,47 +5,44 @@ const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN,
 });
 
-const OWNER = process.env.GITHUB_TEMPLATE_OWNER; // Replace with your GitHub organization or username
+const OWNER = process.env.GITHUB_TEMPLATE_OWNER; 
 
 async function createRepo(repoName) {
     try {
-        // Create a new repository
-        const response = await octokit.request('POST /orgs/{org}/repos', {
-            org: OWNER,
-            name: repoName,
-            description: 'This is your api called repo repository',
-            homepage: 'https://github.com',
-            private: false,
-            has_issues: true,
-            has_projects: true,
-            headers: {
-                'X-GitHub-Api-Version': '2022-11-28',
-            },
-        });
-
-        const newRepoFullName = response.data.full_name;
-        console.log('Repository created:', newRepoFullName);
-
-        // Add README file to the new repository
-        await addReadmeFile('Hello1', 'main');
-
-        // Apply branch protection rules to the main branch
-        await applyBranchProtectionRules('Hello1', 'main');
-
-        
-
+        const newRepoFullName = await createNewRepository(repoName);
+        await addReadmeFile(repoName, 'main');
+        await applyBranchProtectionRules(repoName, 'main');
+        console.log('Repository creation and setup complete:', newRepoFullName);
     } catch (error) {
         console.error('Error creating repository or applying branch protection rules:', error.message);
     }
 }
 
+async function createNewRepository(repoName) {
+    const response = await octokit.request('POST /orgs/{org}/repos', {
+        org: OWNER,
+        name: repoName,
+        description: 'This is your api called repo repository',
+        homepage: 'https://github.com',
+        private: false,
+        has_issues: true,
+        has_projects: true,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28',
+        },
+    });
+
+    const newRepoFullName = response.data.full_name;
+    console.log('Repository created:', newRepoFullName);
+    return newRepoFullName;
+}
+
 async function applyBranchProtectionRules(repoName, branchName) {
     try {
-        // Define branch protection rules
         const branchProtectionRules = {
             required_status_checks: {
                 strict: true,
-                contexts: ['continuous-integration/travis-ci']
+                contexts: ['continuous-integration/travis-ci'],
             },
             enforce_admins: true,
             required_pull_request_reviews: {
@@ -58,7 +55,6 @@ async function applyBranchProtectionRules(repoName, branchName) {
             require_conversation_resolution: true,
         };
 
-        // Apply branch protection rules to the specified branch
         await octokit.request('PUT /repos/{owner}/{repo}/branches/{branch}/protection', {
             owner: OWNER,
             repo: repoName,
@@ -78,7 +74,7 @@ async function applyBranchProtectionRules(repoName, branchName) {
 async function addReadmeFile(repoName, branchName) {
     try {
         const content = `# ${repoName}\n\nThis is the README file for the ${repoName} repository.`;
-        const base64Content = Buffer.from(content).toString('base64'); // convert base64 encoding to string of char
+        const base64Content = Buffer.from(content).toString('base64'); // convert from base64 to string.
 
         await octokit.repos.createOrUpdateFileContents({
             owner: OWNER,
@@ -95,4 +91,5 @@ async function addReadmeFile(repoName, branchName) {
     }
 }
 
-createRepo(repoName);
+
+createRepo("Repo01");
