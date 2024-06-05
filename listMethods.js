@@ -44,3 +44,27 @@ async function listTeams(owner) {
     console.error('Error listing teams:', error.message);
   }
 }
+
+// List template Repos
+
+async function listTemplateRepos(owner) {
+  try {
+    const response = await octokit.repos.listForOrg({
+      org: owner,
+      type: 'all',
+    });
+
+    const templateRepos = response.data.filter(repo => repo.is_template);
+
+    const templateRepoList = templateRepos.map(tempRepo => ({
+      name: tempRepo.name,
+      url: tempRepo.url,
+      id: tempRepo.id,
+      avatar_url: tempRepo.owner.avatar_url,
+    }));
+
+    console.log(templateRepoList);
+  } catch (error) {
+    console.error('Error listing template repositories:', error.message);
+  }
+}
